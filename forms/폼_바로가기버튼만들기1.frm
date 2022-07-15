@@ -1,33 +1,33 @@
 VERSION 5.00
-Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} UserForm1 
+Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} 폼_바로가기버튼만들기1 
    Caption         =   "바로가기 버튼 생성"
-   ClientHeight    =   3015
+   ClientHeight    =   3020
    ClientLeft      =   120
    ClientTop       =   470
    ClientWidth     =   5040
-   OleObjectBlob   =   "UserForm1.frx":0000
+   OleObjectBlob   =   "폼_바로가기버튼만들기1.frx":0000
    StartUpPosition =   1  '소유자 가운데
 End
-Attribute VB_Name = "UserForm1"
+Attribute VB_Name = "폼_바로가기버튼만들기1"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
 Private Sub UserForm_Initialize()
-    ReadListBox.Clear
-    SelectedListBox.Clear
+    리스트_슬라이드.Clear
+    리스트_선택.Clear
 End Sub
 
-Private Sub SelectCommandButton_Click()
-    With SelectedListBox
-        For i = 0 To ReadListBox.ListCount - 1
-            If ReadListBox.Selected(i) Then
-                    .AddItem (ReadListBox.List(i, 0))
-                    If ReadListBox.List(i, 1) <> "" Then
-                        .List(.ListCount - 1, 1) = ReadListBox.List(i, 1)
+Private Sub 버튼_선택_Click()
+    With 리스트_선택
+        For i = 0 To 리스트_슬라이드.ListCount - 1
+            If 리스트_슬라이드.Selected(i) Then
+                    .AddItem (리스트_슬라이드.List(i, 0))
+                    If 리스트_슬라이드.List(i, 1) <> "" Then
+                        .List(.ListCount - 1, 1) = 리스트_슬라이드.List(i, 1)
                     End If
-                    ReadListBox.Selected(i) = False
+                    리스트_슬라이드.Selected(i) = False
             End If
         Next
         
@@ -35,8 +35,8 @@ Private Sub SelectCommandButton_Click()
     End With
 End Sub
 
-Private Sub UpCommandButton_Click()
-    With SelectedListBox
+Private Sub 버튼_위로_Click()
+    With 리스트_선택
         If .ListIndex = 0 Then
             Exit Sub
         Else
@@ -50,8 +50,8 @@ Private Sub UpCommandButton_Click()
         End If
     End With
 End Sub
-Private Sub DownCommandButton_Click()
-    With SelectedListBox
+Private Sub 버튼_아래로_Click()
+    With 리스트_선택
         If .ListIndex = .ListCount - 1 Then
             Exit Sub
         Else
@@ -65,9 +65,9 @@ Private Sub DownCommandButton_Click()
         End If
     End With
 End Sub
-Private Sub DelCommandButton_Click()
+Private Sub 버튼_삭제_Click()
     'MultiSelect가 되는 경우
-    'With SelectedListBox
+    'With 리스트_선택
     '    For i = 0 To .ListCount - 1
     '        If .Selected(i) Then
     '            .RemoveItem i
@@ -76,13 +76,13 @@ Private Sub DelCommandButton_Click()
     '    Next
     'End With
     
-    With SelectedListBox
+    With 리스트_선택
         .RemoveItem (.ListIndex)
     End With
 End Sub
 
-Private Sub NextCommandButton_Click()
-    If Me.SelectedListBox.ListCount < 1 Then
+Private Sub 버튼_다음_Click()
+    If Me.리스트_선택.ListCount < 1 Then
         'If MsgBox("아무 것도 선택되지 않았습니다. 종료하시겠습니까?", vbYesNo + vbDefaultButton2 + vbExclamation) = vbYes Then
         '    Unload Me
         'End If
@@ -91,25 +91,28 @@ Private Sub NextCommandButton_Click()
         Exit Sub
     End If
     
-    Load UserForm2
-    With UserForm2.SelectedListBox
-        For i = 0 To Me.SelectedListBox.ListCount - 1
-            .AddItem (Me.SelectedListBox.List(i, 0))
-            .List(i, 1) = Me.SelectedListBox.List(i, 1)
-            .List(i, 2) = recNotes(.List(i, 1))
-        Next
-        .Parent.StoredParam.Caption = Me.StoredParam.Caption
+    Load 폼_바로가기버튼만들기2
+    With 폼_바로가기버튼만들기2
+        With .리스트_선택
+            For i = 0 To Me.리스트_선택.ListCount - 1
+                .AddItem (Me.리스트_선택.List(i, 0))
+                .List(i, 1) = Me.리스트_선택.List(i, 1)
+                .List(i, 2) = 노트변환(.List(i, 1))
+            Next
+        End With
+        .저장변수_대상구역인덱스.Caption = Me.저장변수_대상구역인덱스.Caption
         
         Me.Hide
-        .Parent.Show vbModal
+        .Show vbModal
     End With
     Unload Me
 End Sub
-Private Sub CancelCommandButton_Click()
+Private Sub 버튼_취소_Click()
     Unload Me
 End Sub
 
-Function recNotes(ByVal s As String)
+Private Function 노트변환(ByVal s As String)
+    '첫 단어 이니셜 추출
     If InStr(1, s, "Verse") Then
         s = Replace(s, "Verse", "v")
     ElseIf InStr(1, s, "Pre-chorus") Then
@@ -122,17 +125,13 @@ Function recNotes(ByVal s As String)
         s = Replace(s, "fin", "f")
     End If
     
+    '"(1/2)" 같은 문구가 있으면 제외하기 위해 "(" 뒤로는 삭제
     If InStr(1, s, "(") Then
-    '    Dim sTemp() As String
-    '    sTemp = Split(s, "(", 2)
-    '    sTemp(1) = Split(sTemp(1), "/", 2)(0)
-    '    s = sTemp(0) & sTemp(1)
-    
         s = Split(s, "(", 2)(0)
     End If
     
     s = Replace(s, " ", "")
     
-    recNotes = s
+    노트변환 = s
     Exit Function
 End Function
