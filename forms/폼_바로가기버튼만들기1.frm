@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} 폼_바로가기버튼만들기1 
    Caption         =   "바로가기 버튼 생성"
-   ClientHeight    =   3020
-   ClientLeft      =   120
-   ClientTop       =   470
-   ClientWidth     =   5040
+   ClientHeight    =   3040
+   ClientLeft      =   110
+   ClientTop       =   450
+   ClientWidth     =   5060
    OleObjectBlob   =   "폼_바로가기버튼만들기1.frx":0000
    StartUpPosition =   1  '소유자 가운데
 End
@@ -20,25 +20,25 @@ Private Sub UserForm_Initialize()
 End Sub
 
 Private Sub 버튼_선택_Click()
-    With 리스트_선택
-        For i = 0 To 리스트_슬라이드.ListCount - 1
-            If 리스트_슬라이드.Selected(i) Then
-                    .AddItem (리스트_슬라이드.List(i, 0))
-                    If 리스트_슬라이드.List(i, 1) <> "" Then
-                        .List(.ListCount - 1, 1) = 리스트_슬라이드.List(i, 1)
-                    End If
-                    리스트_슬라이드.Selected(i) = False
-            End If
-        Next
-        
-        .height = 92.5
-    End With
+    For i = 0 To 리스트_슬라이드.ListCount - 1
+        If 리스트_슬라이드.Selected(i) Then
+            With 리스트_선택
+                .AddItem (리스트_슬라이드.List(i, 0))
+                If 리스트_슬라이드.List(i, 1) <> "" Then
+                    .List(.ListCount - 1, 1) = 리스트_슬라이드.List(i, 1)
+                End If
+            End With
+            리스트_슬라이드.Selected(i) = False
+        End If
+    Next
 End Sub
 
 Private Sub 버튼_위로_Click()
     With 리스트_선택
-        If .ListIndex = 0 Then
+        '이미 처음이거나 선택된 항목이 없을 때
+        If .ListIndex = 0 Or .ListIndex < 0 Then
             Exit Sub
+        
         Else
             Dim tempList
             For i = 0 To 1
@@ -52,8 +52,10 @@ Private Sub 버튼_위로_Click()
 End Sub
 Private Sub 버튼_아래로_Click()
     With 리스트_선택
-        If .ListIndex = .ListCount - 1 Then
+        '이미 마지막이거나 선택된 항목이 없을 때
+        If .ListIndex = .ListCount - 1 Or .ListIndex < 0 Then
             Exit Sub
+        
         Else
             Dim tempList
             For i = 0 To 1
@@ -66,7 +68,7 @@ Private Sub 버튼_아래로_Click()
     End With
 End Sub
 Private Sub 버튼_삭제_Click()
-    'MultiSelect가 되는 경우
+    ''MultiSelect가 되는 경우
     'With 리스트_선택
     '    For i = 0 To .ListCount - 1
     '        If .Selected(i) Then
@@ -77,7 +79,9 @@ Private Sub 버튼_삭제_Click()
     'End With
     
     With 리스트_선택
-        .RemoveItem (.ListIndex)
+        If .ListIndex >= 0 Then
+            .RemoveItem (.ListIndex)
+        End If
     End With
 End Sub
 
