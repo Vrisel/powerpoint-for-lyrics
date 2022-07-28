@@ -23,25 +23,23 @@ Private Sub 버튼_다음_Click()
     Dim 가사분리() As String
     가사분리 = Split(텍스트_가사.Text, vbCrLf & "//" & vbCrLf)
     
-    With Application.ActivePresentation.Slides
+    With ActivePresentation.Slides
         '구역 생성을 위해 최초 삽입 인덱스 기억
         Dim 삽입위치 As Integer
         삽입위치 = .Count + 1
     
         '슬라이드 생성
-        For i = LBound(가사분리) To UBound(가사분리)
-            '슬라이드 추가, "제목 및 내용" 레이아웃(#2)으로
-            .AddSlide (.Count + 1), ActivePresentation.SlideMaster.CustomLayouts(2)
-            
-            가사입력 .Item(.Count), 가사분리(i)
+        Dim 가사 As Variant
+        For Each 가사 In 가사분리
+            가사입력 가사
         Next
         
-        '마지막 빈 슬라이드
+        '마지막 빈 슬라이드 추가
         .AddSlide (.Count + 1), ActivePresentation.SlideMaster.CustomLayouts(2)
     End With
     
     '구역 생성 및 제목 입력
-    ActivePresentation.SectionProperties.AddBeforeSlide (삽입위치), 텍스트_제목.Text
+    ActivePresentation.SectionProperties.AddBeforeSlide 삽입위치, 텍스트_제목.Text
     ActivePresentation.Slides(삽입위치).Shapes(1).TextFrame.TextRange.Text = 텍스트_제목.Text
     
     Unload Me
@@ -50,9 +48,9 @@ Private Sub 버튼_취소_Click()
     Unload Me
 End Sub
 
-Private Sub 가사입력(슬라이드 As Slide, 가사 As String)
+Private Sub 가사입력(가사 As Variant)
     Dim 가사분리() As String
-    가사분리() = Split(가사, vbCrLf & "&&" & vbCrLf)
+    가사분리 = Split(가사, vbCrLf & "&&" & vbCrLf)
     
     '버튼 정보가 저장된 마지막줄의 경우
     If Left(가사분리(0), 1) = "[" Then
@@ -60,21 +58,29 @@ Private Sub 가사입력(슬라이드 As Slide, 가사 As String)
         
     '일반적인 경우
     Else
-        '내용 입력
-        슬라이드.Shapes(2).TextFrame.TextRange.Text = 가사분리(0)
-        
-        '노트 입력 (있으면)
-        If UBound(가사분리) = 1 Then
-            Dim 도형 As Shape
+        With ActivePresentation.Slides
+            '슬라이드 생성
+            '레이아웃은 "제목 및 내용(#2)"
+            .AddSlide (.Count + 1), ActivePresentation.SlideMaster.CustomLayouts(2)
             
-            '아래처럼 For Each - If로 밖에 접근할 수 없음. 인덱스3 으로는 접근 불가.
-            For Each 도형 In 슬라이드.NotesPage.Shapes
-                If 도형.PlaceholderFormat.Type = ppPlaceholderBody Then
-                    도형.TextFrame.TextRange.Text = 가사분리(1)
-                    Exit Sub
+            With .Item(.Count)
+                '내용칸(#2)에 가사 입력
+                .Shapes(2).TextFrame.TextRange.Text = 가사분리(0)
+                
+                '슬라이드노트에 노트 입력 (있으면)
+                If UBound(가사분리) = 1 Then
+                    Dim 도형 As Shape
+                    
+                    '아래처럼 For Each - If로 밖에 접근할 수 없음. 인덱스3 으로는 접근 불가.
+                    For Each 도형 In .NotesPage.Shapes
+                        If 도형.PlaceholderFormat.Type = ppPlaceholderBody Then
+                            도형.TextFrame.TextRange.Text = 가사분리(1)
+                            Exit Sub
+                        End If
+                    Next 도형
                 End If
-            Next 도형
-        End If
+            End With
+        End With
     End If
 End Sub
 
