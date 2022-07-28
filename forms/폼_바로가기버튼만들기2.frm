@@ -31,7 +31,7 @@ Private Sub 버튼_수정_Click()
     End With
 End Sub
 Private Sub 버튼_확인_Click()
-'구역 정보 갱신
+    '구역 정보 갱신
     Dim 구역첫인덱스 As Long
     Dim 구역막인덱스 As Long
     Dim 구역길이 As Long
@@ -40,27 +40,27 @@ Private Sub 버튼_확인_Click()
     구역막인덱스 = ActivePresentation.SectionProperties.SlidesCount(저장변수_대상구역인덱스.Caption) + 구역첫인덱스 - 2
     구역길이 = 구역막인덱스 - 구역첫인덱스 + 1
     
-'버튼 개수
+    '버튼 개수
     Dim 버튼개수 As Integer
     버튼개수 = 리스트_선택.ListCount
     
-'index를 array로
+    'index를 array로
     Dim 바로갈인덱스배열() As String
     ReDim 바로갈인덱스배열(버튼개수 - 1)
     For i = 0 To UBound(바로갈인덱스배열)
         바로갈인덱스배열(i) = 리스트_선택.List(i, 0)
     Next
     
-'String 생성
+    '슬라이드 노트에 추가할 문구 생성
     Dim 슬라이드노트 As String
-    For i = 1 To 버튼개수
-        슬라이드노트 = 슬라이드노트 & "[" & 리스트_선택.List(i - 1, 2) & "]"
-        If i <> 버튼개수 Then
+    For i = 0 To 버튼개수 - 1
+        슬라이드노트 = 슬라이드노트 & "[" & 리스트_선택.List(i, 2) & "]"
+        If i < 버튼개수 Then
             슬라이드노트 = 슬라이드노트 & " "
         End If
     Next
     
-'확인 절차
+    '확인 절차
     If MsgBox("해당 구역 (슬라이드 " & 구역첫인덱스 & "부터 " & 구역막인덱스 & "까지)에" & vbCr _
             & "총 " & 버튼개수 & "개의 버튼을 생성하고" & vbCr _
             & "슬라이드 노트에 아래 문구를 추가하시겠습니까?" & vbCr _
@@ -68,106 +68,101 @@ Private Sub 버튼_확인_Click()
         Exit Sub
     End If
     
-'범위 내 각 Slide에 대해 버튼과 노트 생성
     'Slides.Range에서 활용할 배열 생성
     Dim 슬라이드배열() As Integer
-    ReDim 슬라이드배열(1 To 구역길이)
-    For i = 1 To 구역길이
-        슬라이드배열(i) = ActivePresentation.Slides(구역첫인덱스 + i - 1).SlideIndex
-    Next
-    '초기화
-    Dim 초기화여부 As Boolean
-    If MsgBox("초기화 후 진행하시겠습니까?" & vbCr _
-            & "(※주의: 텍스트 상자를 제외한 모든 도형이 사라집니다.)" _
-            , vbYesNo + vbQuestion) = vbYes Then
-        초기화여부 = True
-    Else
-        초기화여부 = False
-    End If
-    
-'최종
-    For Each 슬라이드 In ActivePresentation.Slides.Range(슬라이드배열)
-        버튼생성전초기화 초기화여부, 슬라이드
-        버튼생성 버튼개수, 바로갈인덱스배열(), 슬라이드
-        슬라이드노트수정 슬라이드노트, 슬라이드
+    ReDim 슬라이드배열(구역길이)
+    For i = 0 To 구역길이 - 1
+        슬라이드배열(i) = ActivePresentation.Slides(구역첫인덱스 + i).SlideIndex
     Next
     
-'끝
-    MsgBox ("성공적으로 완료하였습니다.")
-    Unload Me
+    버튼및노트삽입 슬라이드배열(), 바로갈인덱스배열(), 슬라이드노트
 End Sub
 Private Sub 버튼_취소_Click()
     Unload Me
 End Sub
 
-Private Sub 버튼생성전초기화(ByVal 초기화여부 As Boolean, ByVal 슬라이드 As Slide)
-    '(물어보고) 초기화
-    '혹은 생성 직전에 상태를 파악해서 지우고 쓰겠냐고 되묻든가..
-    '더 발전하면, 이미 있는 상태에서 수정..은 귀찮겠구나. 갯수 다르면 어쩔..
-    If Not 초기화여부 Then
+Private Sub 버튼및노트삽입(슬라이드배열() As Integer, ByRef 바로갈인덱스배열() As String, 삽입문구 As String)
+    Dim 초기화여부 As Boolean
+    Select Case MsgBox("초기화 후 진행하시겠습니까?" & vbCr _
+            & "(※주의: 텍스트 상자를 제외한 모든 도형이 사라집니다.)" _
+            , vbYesNoCancel + vbQuestion)
+    Case vbCancel
         Exit Sub
-    End If
+    Case vbYes
+        초기화여부 = True
+    Case vbNo
+        초기화여부 = False
+    End Select
     
-    Dim 도형 As Shape
-DelAgain:
-    For Each 도형 In 슬라이드.Shapes
-        If 도형.Type <> 14 And 도형.Type <> 17 Then '14는 제목/본문, 17은 텍스트상자
-            도형.Delete
-        End If
-    Next 도형
+    'For문 돌려서 버튼삽입 노트삽입
+    Dim 슬라이드 As Slide
+    For Each 슬라이드 In ActivePresentation.Slides.Range(슬라이드배열)
+        버튼삽입 슬라이드, 초기화여부, 바로갈인덱스배열()
+        슬라이드노트삽입 슬라이드, 초기화여부, 삽입문구
+    Next
     
-    For Each 도형 In 슬라이드.Shapes
-        If 도형.Type <> 14 And 도형.Type <> 17 Then '14는 제목/본문, 17은 텍스트상자
-            GoTo DelAgain
-        End If
-    Next 도형
-    
-    For Each 도형 In 슬라이드.NotesPage.Shapes
-        If 도형.PlaceholderFormat.Type = ppPlaceholderBody Then
-            With 도형.TextFrame.TextRange
-                If .Parent.HasText Then
-                    .Text = Split(.Text, "[", 2)(0) 'RTrim 할 필요가..?
+    MsgBox ("성공적으로 완료하였습니다.")
+    Unload Me
+End Sub
+
+Private Sub 버튼삽입(슬라이드 As Slide, 초기화여부 As Boolean, ByRef 바로갈인덱스배열() As String)
+    '초기화
+    If 초기화여부 = True Then
+        Dim i As Integer
+        For i = 슬라이드.Shapes.Count To 1 Step -1
+            With 슬라이드.Shapes(i)
+                If .Type <> 14 And .Type <> 17 Then '14는 제목/본문, 17은 텍스트상자
+                    .Delete
                 End If
             End With
-        End If
-    Next 도형
-End Sub
-Private Sub 버튼생성(ByVal n As Integer, ByRef 바로갈인덱스배열() As String, ByVal 슬라이드 As Slide)
-    With 슬라이드
-        Dim w As Single
-        Dim h As Single
-        w = .Parent.SlideMaster.width
-        h = .Parent.SlideMaster.height
-        For j = 0 To n - 1
-            With .Shapes.AddShape(msoShapeRectangle, j * w / n, h / 2, w / n, h / 2 + 30)
-                .Fill.Transparency = 1
-                .Line.Visible = msoFalse
-                .TextFrame2.VerticalAnchor = msoAnchorBottom
-                .TextFrame.TextRange.Font.Color.RGB = RGB(0, 0, 0)
-                .TextFrame.TextRange.Text = 바로갈인덱스배열(j)
-                .ActionSettings(ppMouseClick).Action = ppActionRunMacro
-                .ActionSettings(ppMouseClick).Run = "바로가기"
-            End With
-        Next
+        Next i
+    End If
+    
+    '버튼 생성
+    Dim 버튼개수 As Integer
+    버튼개수 = UBound(바로갈인덱스배열) - LBound(바로갈인덱스배열) + 1
+    
+    With 슬라이드.Parent.SlideMaster
+        Dim 슬라이드w, 슬라이드h As Single
+        슬라이드w = .width
+        슬라이드h = .height
     End With
+    
+    Dim 버튼w, 버튼h, 버튼t As Single
+    버튼w = 슬라이드w / 버튼개수
+    버튼h = 슬라이드h / 2 + 30
+    버튼t = 슬라이드h / 2
+    
+    For i = 0 To 버튼개수 - 1
+        With 슬라이드.Shapes.AddShape(msoShapeRectangle, 버튼w * i, 버튼t, 버튼w, 버튼h)
+            .Fill.Transparency = 1
+            .Line.Visible = msoFalse
+            .TextFrame2.VerticalAnchor = msoAnchorBottom
+            .TextFrame.TextRange.Font.Color.RGB = RGB(0, 0, 0)
+            .TextFrame.TextRange.Text = 바로갈인덱스배열(i)
+            .ActionSettings(ppMouseClick).Action = ppActionRunMacro
+            .ActionSettings(ppMouseClick).Run = "바로가기"
+        End With
+    Next
 End Sub
-Private Sub 슬라이드노트수정(ByVal 노트 As String, ByVal 슬라이드 As Slide)
+Private Sub 슬라이드노트삽입(슬라이드 As Slide, 초기화여부 As Boolean, 삽입문구 As String)
     Dim 도형 As Shape
     '아래처럼 For Each - If로 밖에 접근할 수 없음. 인덱스3 으로는 접근 불가.
     For Each 도형 In 슬라이드.NotesPage.Shapes
         If 도형.PlaceholderFormat.Type = ppPlaceholderBody Then
             With 도형.TextFrame.TextRange
-                If .Parent.HasText Then
-                    If Not Right(.Text, 1) = vbCr Then
-                        .InsertAfter vbCr
-                    End If
+                If .Parent.HasText = True And 초기화여부 = True Then
+                    .Text = Split(.Text, "[", 2)(0)
+                    'RTrim 할 필요가..?
                 End If
                 
-                .InsertAfter 노트
+                If .Parent.HasText = True And Not Right(.Text, 1) = vbCr Then
+                    .InsertAfter vbCr
+                End If
+                
+                .InsertAfter 삽입문구
             End With
             Exit Sub
-            
         End If
     Next 도형
 End Sub
-
