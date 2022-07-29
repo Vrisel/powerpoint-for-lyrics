@@ -1,10 +1,10 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} 폼_바로가기버튼만들기2 
    Caption         =   "버튼 설명 수정"
-   ClientHeight    =   3020
-   ClientLeft      =   120
-   ClientTop       =   470
-   ClientWidth     =   4560
+   ClientHeight    =   3280
+   ClientLeft      =   110
+   ClientTop       =   450
+   ClientWidth     =   4580
    OleObjectBlob   =   "폼_바로가기버튼만들기2.frx":0000
    StartUpPosition =   1  '소유자 가운데
 End
