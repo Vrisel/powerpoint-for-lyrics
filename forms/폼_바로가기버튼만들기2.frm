@@ -15,16 +15,16 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Private Sub UserForm_Initialize()
     리스트_선택.Clear
-    텍스트_수정.Text = ""
+    텍스트_수정.text = ""
 End Sub
 Private Sub 버튼_수정_Click()
     With 리스트_선택
         If .ListIndex < 0 Then
             MsgBox "설명을 수정할 슬라이드를 선택해주세요.", vbOKOnly + vbExclamation
         Else
-            .List(.ListIndex, 2) = 텍스트_수정.Text
+            .List(.ListIndex, 2) = 텍스트_수정.text
             .ListIndex = -1
-            텍스트_수정.Text = ""
+            텍스트_수정.text = ""
         End If
         
         .SetFocus
@@ -78,7 +78,9 @@ Private Sub 버튼_확인_Click()
     버튼및노트삽입 슬라이드배열(), 바로갈인덱스배열(), 슬라이드노트
 End Sub
 Private Sub 버튼_취소_Click()
-    Unload Me
+    If MsgBox("정말로 취소하시겠습니까?", vbOKCancel) = vbOK Then
+        Unload Me
+    End If
 End Sub
 
 Private Sub 버튼및노트삽입(슬라이드배열() As Integer, ByRef 바로갈인덱스배열() As String, 삽입문구 As String)
@@ -139,7 +141,7 @@ Private Sub 버튼삽입(슬라이드 As Slide, 초기화여부 As Boolean, ByRef 바로갈인덱�
             .Line.Visible = msoFalse
             .TextFrame2.VerticalAnchor = msoAnchorBottom
             .TextFrame.TextRange.Font.Color.RGB = RGB(0, 0, 0)
-            .TextFrame.TextRange.Text = 바로갈인덱스배열(i)
+            .TextFrame.TextRange.text = 바로갈인덱스배열(i)
             .ActionSettings(ppMouseClick).Action = ppActionRunMacro
             .ActionSettings(ppMouseClick).Run = "바로가기"
         End With
@@ -152,11 +154,11 @@ Private Sub 슬라이드노트삽입(슬라이드 As Slide, 초기화여부 As Boolean, 삽입문구 
         If 도형.PlaceholderFormat.Type = ppPlaceholderBody Then
             With 도형.TextFrame.TextRange
                 If .Parent.HasText = True And 초기화여부 = True Then
-                    .Text = Split(.Text, "[", 2)(0)
+                    .text = Split(.text, "[", 2)(0)
                     'RTrim 할 필요가..?
                 End If
                 
-                If .Parent.HasText = True And Not Right(.Text, 1) = vbCr Then
+                If .Parent.HasText = True And Not Right(.text, 1) = vbCr Then
                     .InsertAfter vbCr
                 End If
                 

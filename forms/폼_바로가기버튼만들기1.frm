@@ -112,7 +112,9 @@ Private Sub 버튼_다음_Click()
     Unload Me
 End Sub
 Private Sub 버튼_취소_Click()
-    Unload Me
+    If MsgBox("정말로 취소하시겠습니까?", vbOKCancel) = vbOK Then
+        Unload Me
+    End If
 End Sub
 
 Private Function 노트변환(ByVal s As String)
