@@ -58,15 +58,26 @@ Private Sub 파일열기()
     
     '파일 열기
     Dim 파일경로 As String
-    Dim 파일경로분해() As String
     With Application.FileDialog(msoFileDialogFilePicker)
         .Filters.Clear
         .Filters.Add "텍스트 파일", "*.txt"
         
         If .Show = True Then
             파일경로 = .SelectedItems(1)
-            파일경로분해 = Split(파일경로, "\")
-            제목 = Split(파일경로분해(UBound(파일경로분해)), ".txt", 2)(0)
+            
+            '정규식 사용은 도구(T) > 참조(R)... > Microsoft VBScript Regular Expression 5.5 추가
+            With CreateObject("VBScript.RegExp")
+                'VBA에서 백슬래시 이스케이프가 안 되어 Chr(92)로 대체
+                '\\: 백슬래시 이스케이프
+                '([^\\]+): 백슬래시가 아닌 문자 1개 이상, 캡처
+                '\.txt$: ".txt"로 끝나는 확장자
+                .Pattern = Chr(92) & Chr(92) & _
+                            "([^" & Chr(92) & Chr(92) & "]+)" & _
+                            Chr(92) & ".txt$"
+                .IgnoreCase = True
+                
+                제목 = .Execute(파일경로).Item(0).SubMatches(0)
+            End With
             
             With CreateObject("ADODB.Stream")
                 .Open
