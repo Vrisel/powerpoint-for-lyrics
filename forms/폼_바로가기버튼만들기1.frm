@@ -19,14 +19,31 @@ Private Sub UserForm_Initialize()
     리스트_선택.Clear
 End Sub
 
+Private Sub 리스트_슬라이드_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
+    'With 리스트_슬라이드
+        '.ListCount는 그저 아이템 개수라 원하는 기능이 아니고, _
+            아래 멤버를 검색해서 찾아냈는데, 실제로 사용해보면 없는 멤버라고 나옴
+        'If .ItemsSelected.Count > 0 Then
+            슬라이드_선택
+        'End If
+    'End With
+End Sub
+
 Private Sub 버튼_선택_Click()
+   슬라이드_선택
+End Sub
+
+Private Sub 슬라이드_선택()
+    '선택된 항목들에 대해서만 반복문을 돌리고 싶은데, _
+        버전 문제인지 관련 기능이 구현이 되어있지 않아 _
+        모든 항목에 대해 선택여부를 확인하며 진행
+    
+    Dim i As Integer
     For i = 0 To 리스트_슬라이드.ListCount - 1
         If 리스트_슬라이드.Selected(i) Then
             With 리스트_선택
                 .AddItem (리스트_슬라이드.List(i, 0))
-                If 리스트_슬라이드.List(i, 1) <> "" Then
-                    .List(.ListCount - 1, 1) = 리스트_슬라이드.List(i, 1)
-                End If
+                .List(.ListCount - 1, 1) = 리스트_슬라이드.List(i, 1)
             End With
             리스트_슬라이드.Selected(i) = False
         End If
@@ -40,13 +57,12 @@ Private Sub 버튼_위로_Click()
             Exit Sub
         
         Else
-            Dim tempList
-            For i = 0 To 1
-                tempList = .List(.ListIndex, i)
-                .List(.ListIndex, i) = .List(.ListIndex - 1, i)
-                .List(.ListIndex - 1, i) = tempList
-            Next
-            .ListIndex = .ListIndex - 1
+            '.ListIndex-1 자리에 항목 추가 -> .ListIndex가 1 늘어남, 새 항목과 index 2만큼 차이 남
+            .AddItem .List(.ListIndex, 0), (.ListIndex - 1)
+            
+            .List((.ListIndex - 2), 1) = .List(.ListIndex, 1)
+            .ListIndex = .ListIndex - 2
+            .RemoveItem .ListIndex + 2
         End If
     End With
 End Sub
@@ -57,30 +73,32 @@ Private Sub 버튼_아래로_Click()
             Exit Sub
         
         Else
-            Dim tempList
-            For i = 0 To 1
-                tempList = .List(.ListIndex, i)
-                .List(.ListIndex, i) = .List(.ListIndex + 1, i)
-                .List(.ListIndex + 1, i) = tempList
-            Next
-            .ListIndex = .ListIndex + 1
+            '.ListIndex+2 자리에 항목 추가 -> .ListIndex 변동 없음, 새 항목과 index 2만큼 차이 남
+            .AddItem .List(.ListIndex, 0), (.ListIndex + 2)
+            
+            .List((.ListIndex + 2), 1) = .List(.ListIndex, 1)
+            .ListIndex = .ListIndex + 2
+            .RemoveItem .ListIndex - 2
         End If
     End With
 End Sub
 Private Sub 버튼_삭제_Click()
-    ''MultiSelect가 되는 경우
-    'With 리스트_선택
-    '    For i = 0 To .ListCount - 1
-    '        If .Selected(i) Then
-    '            .RemoveItem i
-    '            Exit Sub
-    '        End If
-    '    Next
-    'End With
-    
     With 리스트_선택
-        If .ListIndex >= 0 Then
-            .RemoveItem (.ListIndex)
+        'MultiSelect가 Single인 경우 _
+            삭제 후 .ListIndex (혹은 .ListIndex-1)이 선택되어있는 편이 _
+            다중삭제에 용이하기 때문에 _
+            로직을 분리함
+        If .MultiSelect = fmMultiSelectSingle Then
+            If .ListIndex >= 0 Then
+                .RemoveItem (.ListIndex)
+            End If
+            
+        Else
+            For i = .ListCount - 1 To 0 Step -1
+                If .Selected(i) Then
+                    .RemoveItem i
+                End If
+            Next
         End If
     End With
 End Sub
